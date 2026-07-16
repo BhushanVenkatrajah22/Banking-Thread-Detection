@@ -67,11 +67,35 @@ export default function Header() {
     return 'SecureMind AI Platform';
   };
 
-  const mockNotifications = [
-    { id: 1, title: 'CRITICAL: Data Exfiltration Risk', desc: 'Rajesh Kumar behavior drift is 78% (USB insertion detected).', time: '2 mins ago', unread: true },
-    { id: 2, title: 'HIGH: Database Logging Terminated', desc: 'syslogd daemon stopped by admin priya.sharma.', time: '14 mins ago', unread: true },
-    { id: 3, title: 'INFO: Settings updated', desc: 'Risk sensitivity threshold updated to 85% for Retail.', time: '1 hour ago', unread: false }
-  ];
+  const [notifications, setNotifications] = useState<any[]>([]);
+
+  const fetchNotifications = () => {
+    fetch('/api/notifications')
+      .then(res => res.json())
+      .then(data => {
+        setNotifications(data.notifications || []);
+      })
+      .catch(err => console.error(err));
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 10000); // sync alerts count
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleMarkAllRead = async () => {
+    try {
+      await fetch('/api/notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'markAllRead' })
+      });
+      fetchNotifications();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <header className="h-16 bg-white border-b border-[#E2E8F0] flex items-center justify-between px-6 z-10 shrink-0 select-none">
@@ -110,17 +134,19 @@ export default function Header() {
             className="w-9 h-9 rounded-lg border border-[#E2E8F0] hover:bg-[#F8FAFC] flex items-center justify-center text-[#1E293B] relative transition-colors cursor-pointer"
           >
             <Bell className="w-4 h-4" />
-            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#EF4444]"></span>
+            {notifications.some(n => n.unread) && (
+              <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#EF4444]"></span>
+            )}
           </button>
 
           {showNotifications && (
             <div className="absolute right-0 mt-2 w-80 bg-white border border-[#E2E8F0] rounded-xl shadow-lg z-50 p-2 py-3 overflow-hidden">
               <div className="flex items-center justify-between px-3 pb-2 border-b border-slate-100">
                 <span className="font-bold text-sm text-[#0F172A]">Security Notifications</span>
-                <span className="text-[11px] text-[#2563EB] font-semibold hover:underline cursor-pointer">Mark all read</span>
+                <span onClick={handleMarkAllRead} className="text-[11px] text-[#2563EB] font-semibold hover:underline cursor-pointer">Mark all read</span>
               </div>
               <div className="mt-1 divide-y divide-slate-50">
-                {mockNotifications.map((notif) => (
+                {notifications.map((notif) => (
                   <div key={notif.id} className="p-3 hover:bg-[#F8FAFC] transition-colors rounded-lg">
                     <div className="flex justify-between items-start gap-2">
                       <span className={`font-semibold text-xs ${notif.unread ? 'text-[#0F172A]' : 'text-slate-500'}`}>
