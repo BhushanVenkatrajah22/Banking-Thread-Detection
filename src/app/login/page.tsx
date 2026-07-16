@@ -14,7 +14,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleCredentialsSubmit = (e: React.FormEvent) => {
+  const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
       setError('Please fill in all credentials.');
@@ -22,11 +22,26 @@ export default function LoginPage() {
     }
     setError('');
     setLoading(true);
-    // Simulate API authorization check
-    setTimeout(() => {
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password: password === '••••••••••••' ? 'password' : password })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || 'Authentication failed.');
+        setLoading(false);
+        return;
+      }
+      localStorage.setItem('user', JSON.stringify(data.user));
       setLoading(false);
       setStep(2);
-    }, 1000);
+    } catch (err) {
+      console.error(err);
+      setError('Network auth connection timed out.');
+      setLoading(false);
+    }
   };
 
   const handleOtpChange = (value: string, index: number) => {

@@ -16,12 +16,41 @@ import {
   TrendingDown,
   Info
 } from 'lucide-react';
-import { generateMockDatabase } from '@/data/mockData';
+import { useEffect } from 'react';
 
 export default function ThreatPredictionsPage() {
-  const { predictions } = generateMockDatabase();
-  const [selectedPredId, setSelectedPredId] = useState<string>(predictions[0]?.id || '');
+  const [predictions, setPredictions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedPredId, setSelectedPredId] = useState<string>('');
+
+  useEffect(() => {
+    setLoading(true);
+    fetch('/api/predictions')
+      .then(res => res.json())
+      .then(data => {
+        const preds = data.predictions || [];
+        setPredictions(preds);
+        if (preds.length > 0) {
+          setSelectedPredId(preds[0].id);
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, []);
+
   const selectedPrediction = predictions.find(p => p.id === selectedPredId) || predictions[0];
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
+        <div className="w-8 h-8 rounded-full border-2 border-[#2563EB]/20 border-t-[#2563EB] animate-spin"></div>
+        <span className="text-xs text-slate-500 font-semibold">Running predictive models...</span>
+      </div>
+    );
+  }
 
   const getImpactBadgeColor = (impact: string) => {
     switch (impact) {

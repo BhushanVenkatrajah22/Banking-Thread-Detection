@@ -12,21 +12,42 @@ import {
   PlusCircle,
   UserCheck
 } from 'lucide-react';
-import { generateMockDatabase } from '@/data/mockData';
+import { useEffect } from 'react';
 
 export default function InvestigationCenterPage() {
-  const { investigations } = generateMockDatabase();
+  const [investigations, setInvestigations] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<'All' | 'open' | 'under_review' | 'resolved'>('All');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredCases = investigations.filter((item) => {
-    const matchesStatus = statusFilter === 'All' || item.status === statusFilter;
-    const matchesSearch = 
-      item.employeeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.department.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesStatus && matchesSearch;
-  });
+  useEffect(() => {
+    setLoading(true);
+    const params = new URLSearchParams({
+      search: searchTerm,
+      status: statusFilter
+    });
+    fetch(`/api/investigation?${params.toString()}`)
+      .then(res => res.json())
+      .then(data => {
+        setInvestigations(data.investigations || []);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, [searchTerm, statusFilter]);
+
+  const filteredCases = investigations;
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
+        <div className="w-8 h-8 rounded-full border-2 border-[#2563EB]/20 border-t-[#2563EB] animate-spin"></div>
+        <span className="text-xs text-slate-500 font-semibold">Loading active cases logs...</span>
+      </div>
+    );
+  }
 
   const getSeverityStyle = (severity: string) => {
     switch (severity) {

@@ -13,30 +13,56 @@ import {
   RefreshCw,
   Clock
 } from 'lucide-react';
-import { generateMockDatabase } from '@/data/mockData';
+import { useEffect } from 'react';
 
 export default function DigitalTwinsPage() {
-  const { employees } = generateMockDatabase();
+  const [employees, setEmployees] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [deptFilter, setDeptFilter] = useState('All');
   const [driftFilter, setDriftFilter] = useState('All'); // All, High (>50%), Normal (<25%), Shifting (25-50%)
 
-  const filteredEmployees = useMemo(() => {
-    return employees.filter(emp => {
-      const matchesSearch = emp.name.toLowerCase().includes(searchTerm.toLowerCase()) || emp.id.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesDept = deptFilter === 'All' || emp.department === deptFilter;
-      
-      let matchesDrift = true;
-      if (driftFilter === 'High') matchesDrift = emp.driftScore >= 50;
-      else if (driftFilter === 'Shifting') matchesDrift = emp.driftScore >= 25 && emp.driftScore < 50;
-      else if (driftFilter === 'Normal') matchesDrift = emp.driftScore < 25;
-
-      return matchesSearch && matchesDept && matchesDrift;
+  useEffect(() => {
+    setLoading(true);
+    const params = new URLSearchParams({
+      search: searchTerm,
+      dept: deptFilter,
+      drift: driftFilter
     });
-  }, [employees, searchTerm, deptFilter, driftFilter]);
+    fetch(`/api/digital-twin?${params.toString()}`)
+      .then(res => res.json())
+      .then(data => {
+        setEmployees(data.employees || []);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, [searchTerm, deptFilter, driftFilter]);
 
-  const departments = ['All', ...Array.from(new Set(employees.map(e => e.department)))];
+  const departments = [
+    'All',
+    'Treasury & Markets',
+    'Wealth Management',
+    'Retail Banking',
+    'IT & Cybersecurity',
+    'Operations',
+    'Human Resources',
+    'Legal & Compliance'
+  ];
+
+  const filteredEmployees = employees;
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
+        <div className="w-8 h-8 rounded-full border-2 border-[#2563EB]/20 border-t-[#2563EB] animate-spin"></div>
+        <span className="text-xs text-slate-500 font-semibold">Synchronizing employee behavior twins...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

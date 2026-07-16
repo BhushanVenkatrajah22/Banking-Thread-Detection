@@ -23,45 +23,94 @@ import {
 } from 'lucide-react';
 import { generateMockDatabase } from '@/data/mockData';
 
+import { useEffect } from 'react';
+
 export default function InvestigationDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const caseId = params.id as string;
 
-  const { investigations } = generateMockDatabase();
-  const caseFile = investigations.find(c => c.id === caseId);
+  const [caseFile, setCaseFile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   // Local state for interactive buttons
-  const [status, setStatus] = useState<string>(caseFile?.status || 'open');
+  const [status, setStatus] = useState<string>('open');
   const [accountLocked, setAccountLocked] = useState(false);
   const [escalated, setEscalated] = useState(false);
-  const [notes, setNotes] = useState<string[]>(caseFile?.notes || []);
+  const [notes, setNotes] = useState<string[]>([]);
   const [newNote, setNewNote] = useState('');
   
   // Modal for Report Generation
   const [showReportModal, setShowReportModal] = useState(false);
   const [generatingReport, setGeneratingReport] = useState(false);
   const [reportSuccess, setReportSuccess] = useState(false);
-  const [reportTitle, setReportTitle] = useState(`Compliance Audit Report - ${caseFile?.employeeName}`);
+  const [reportTitle, setReportTitle] = useState('');
   const [reportComments, setReportComments] = useState('Critical behavioral drift verified against learned digital twin. Active exfiltration vectors blocked. Workstation WS-TRD-45 quarantined.');
 
-  if (!caseFile) {
-    return (
-      <div className="text-center py-12">
-        <h3 className="text-lg font-bold text-slate-800">Case file not found</h3>
-        <p className="text-sm text-slate-500 mt-2">The case ID {caseId} does not exist.</p>
-        <Link href="/dashboard/investigation" className="text-[#2563EB] hover:underline text-xs mt-4 inline-block font-bold">
-          Return to Investigation Center
-        </Link>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (!caseId) return;
+    setLoading(true);
+    fetch(`/api/investigation/${caseId}`)
+      .then(res => res.json())
+      .then(data => {
+        const item = data.caseFile || null;
+        setCaseFile(item);
+        if (item) {
+          setStatus(item.status);
+          setNotes(item.notes || []);
+          setReportTitle(`Compliance Audit Report - ${item.employeeName}`);
+          setAccountLocked(item.timeline && item.timeline[0]?.employeeStatus === 'offline');
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, [caseId]);
 
-  const handleAddNote = (e: React.FormEvent) => {
+  const handleStatusChange = async (newVal: string) => {
+    setStatus(newVal);
+    try {
+      await fetch(`/api/investigation/${caseId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newVal })
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleLockAccount = async () => {
+    const newVal = !accountLocked;
+    setAccountLocked(newVal);
+    try {
+      await fetch(`/api/investigation/${caseId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accountLocked: newVal })
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleAddNote = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newNote.trim()) return;
-    setNotes([...notes, newNote]);
+    const updatedNotes = [...notes, newNote];
+    setNotes(updatedNotes);
     setNewNote('');
+    try {
+      await fetch(`/api/investigation/${caseId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes: updatedNotes })
+      });
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleGenerateReport = (e: React.FormEvent) => {
@@ -86,6 +135,27 @@ export default function InvestigationDetailsPage() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
+        <div className="w-8 h-8 rounded-full border-2 border-[#2563EB]/20 border-t-[#2563EB] animate-spin"></div>
+        <span className="text-xs text-slate-500 font-semibold">Loading case file records...</span>
+      </div>
+    );
+  }
+
+  if (!caseFile) {
+    return (
+      <div className="text-center py-12">
+        <h3 className="text-lg font-bold text-slate-800">Case file not found</h3>
+        <p className="text-sm text-slate-500 mt-2">The case ID {caseId} does not exist in the database.</p>
+        <Link href="/dashboard/investigation" className="text-[#2563EB] hover:underline text-xs mt-4 inline-block font-bold">
+          Return to Investigation Center
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       
@@ -104,7 +174,7 @@ export default function InvestigationDetailsPage() {
           <span className="text-xs text-slate-500 font-semibold">Status:</span>
           <select 
             value={status} 
-            onChange={(e) => setStatus(e.target.value)}
+            onChange={(e) => handleStatusChange(e.target.value)}
             className={`text-xs font-bold border px-3 py-1.5 rounded-lg focus:outline-none transition-colors ${getStatusColor(status)}`}
           >
             <option value="open">OPEN PRIORITY</option>
@@ -214,7 +284,7 @@ export default function InvestigationDetailsPage() {
             <div className="space-y-3">
               {/* Lock account */}
               <button
-                onClick={() => setAccountLocked(!accountLocked)}
+                onClick={handleLockAccount}
                 className={`w-full py-2.5 px-4 rounded-lg text-xs font-bold transition-all border flex items-center justify-between cursor-pointer ${
                   accountLocked 
                     ? 'bg-[#10B981] border-[#10B981] text-white hover:bg-emerald-600' 

@@ -30,16 +30,39 @@ import {
   Tooltip, 
   Legend 
 } from 'recharts';
-import { generateMockDatabase } from '@/data/mockData';
+import { useEffect } from 'react';
 
 export default function DigitalTwinDetailsPage() {
   const params = useParams();
   const employeeId = params.id as string;
 
-  const { employees } = generateMockDatabase();
-  const employee = employees.find(e => e.id === employeeId);
-
+  const [employee, setEmployee] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [compareMetric, setCompareMetric] = useState<'hours' | 'database' | 'files'>('hours');
+
+  useEffect(() => {
+    if (!employeeId) return;
+    setLoading(true);
+    fetch(`/api/digital-twin/${employeeId}`)
+      .then(res => res.json())
+      .then(data => {
+        setEmployee(data.twin || null);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, [employeeId]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
+        <div className="w-8 h-8 rounded-full border-2 border-[#2563EB]/20 border-t-[#2563EB] animate-spin"></div>
+        <span className="text-xs text-slate-500 font-semibold">Comparing learned digital twins...</span>
+      </div>
+    );
+  }
 
   if (!employee) {
     return (

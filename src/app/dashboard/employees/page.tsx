@@ -14,10 +14,11 @@ import {
   SlidersHorizontal,
   X
 } from 'lucide-react';
-import { generateMockDatabase } from '@/data/mockData';
+import { useEffect } from 'react';
 
 export default function EmployeeDirectoryPage() {
-  const { employees } = generateMockDatabase();
+  const [employees, setEmployees] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Search & Filter State
   const [searchTerm, setSearchTerm] = useState('');
@@ -27,36 +28,46 @@ export default function EmployeeDirectoryPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
 
-  // Department List
-  const departments = ['All', ...Array.from(new Set(employees.map(e => e.department)))];
-
-  // Filtering Logic
-  const filteredEmployees = useMemo(() => {
-    return employees.filter((emp) => {
-      const matchesSearch = 
-        emp.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        emp.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        emp.role.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesDept = deptFilter === 'All' || emp.department === deptFilter;
-      
-      const matchesStatus = statusFilter === 'All' || emp.status === statusFilter.toLowerCase();
-
-      let matchesRisk = true;
-      if (riskFilter === 'High') matchesRisk = emp.predictionRisk >= 70;
-      else if (riskFilter === 'Medium') matchesRisk = emp.predictionRisk >= 35 && emp.predictionRisk < 70;
-      else if (riskFilter === 'Low') matchesRisk = emp.predictionRisk < 35;
-
-      return matchesSearch && matchesDept && matchesStatus && matchesRisk;
+  useEffect(() => {
+    setLoading(true);
+    const params = new URLSearchParams({
+      search: searchTerm,
+      dept: deptFilter,
+      risk: riskFilter,
+      status: statusFilter
     });
-  }, [employees, searchTerm, deptFilter, riskFilter, statusFilter]);
+    fetch(`/api/employees?${params.toString()}`)
+      .then(res => res.json())
+      .then(data => {
+        setEmployees(data.employees || []);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, [searchTerm, deptFilter, riskFilter, statusFilter]);
+
+  // Department List
+  const departments = [
+    'All',
+    'Treasury & Markets',
+    'Wealth Management',
+    'Retail Banking',
+    'IT & Cybersecurity',
+    'Operations',
+    'Human Resources',
+    'Legal & Compliance'
+  ];
 
   // Pagination Logic
-  const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
+  const totalPages = Math.ceil(employees.length / itemsPerPage);
   const paginatedEmployees = useMemo(() => {
     const startIdx = (currentPage - 1) * itemsPerPage;
-    return filteredEmployees.slice(startIdx, startIdx + itemsPerPage);
-  }, [filteredEmployees, currentPage]);
+    return employees.slice(startIdx, startIdx + itemsPerPage);
+  }, [employees, currentPage]);
+
+  const filteredEmployees = employees;
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {

@@ -32,17 +32,40 @@ import {
   Tooltip, 
   ResponsiveContainer 
 } from 'recharts';
-import { generateMockDatabase } from '@/data/mockData';
+import { useEffect } from 'react';
 
 export default function EmployeeProfilePage() {
   const params = useParams();
   const router = useRouter();
   const employeeId = params.id as string;
 
-  const { employees } = generateMockDatabase();
-  const employee = employees.find(e => e.id === employeeId);
-
+  const [employee, setEmployee] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'anomalies' | 'logs'>('overview');
+
+  useEffect(() => {
+    if (!employeeId) return;
+    setLoading(true);
+    fetch(`/api/employees/${employeeId}`)
+      .then(res => res.json())
+      .then(data => {
+        setEmployee(data.employee || null);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, [employeeId]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
+        <div className="w-8 h-8 rounded-full border-2 border-[#2563EB]/20 border-t-[#2563EB] animate-spin"></div>
+        <span className="text-xs text-slate-500 font-semibold">Loading profile parameters...</span>
+      </div>
+    );
+  }
 
   if (!employee) {
     return (

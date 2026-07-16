@@ -30,36 +30,33 @@ import {
   Pie,
   Cell
 } from 'recharts';
-import { generateMockDatabase, getLiveActivities, getDailyInsights, getDepartmentMetrics } from '@/data/mockData';
+import { useEffect } from 'react';
 
 export default function DashboardPage() {
-  const { employees, predictions } = generateMockDatabase();
-  const liveActivities = getLiveActivities();
-  const dailyInsights = getDailyInsights();
-  const departmentMetrics = getDepartmentMetrics();
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Metrics calculations
-  const totalEmployees = employees.length;
-  const onlineCount = employees.filter(e => e.status === 'online').length;
-  const highRiskCount = predictions.filter(p => p.probability >= 70).length;
-  const avgTrustScore = (employees.reduce((acc, curr) => acc + curr.trustScore, 0) / totalEmployees).toFixed(1);
-  const threatsPrevented = 14;
+  useEffect(() => {
+    fetch('/api/dashboard')
+      .then(res => res.json())
+      .then(data => {
+        setDashboardData(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, []);
 
-  // Chart 1 data: Risk distribution brackets
-  const riskDistribution = [
-    { range: '0-20% (Low)', count: employees.filter(e => e.predictionRisk <= 20).length },
-    { range: '21-40% (Mild)', count: employees.filter(e => e.predictionRisk > 20 && e.predictionRisk <= 40).length },
-    { range: '41-60% (Medium)', count: employees.filter(e => e.predictionRisk > 40 && e.predictionRisk <= 60).length },
-    { range: '61-80% (Elevated)', count: employees.filter(e => e.predictionRisk > 60 && e.predictionRisk <= 80).length },
-    { range: '81-100% (High)', count: employees.filter(e => e.predictionRisk > 80).length },
-  ];
-
-  // Chart 2 data: Trust score distribution
-  const trustScoresChart = [
-    { name: 'Critical (<30)', value: employees.filter(e => e.trustScore < 30).length, color: '#EF4444' },
-    { name: 'Substandard (30-60)', value: employees.filter(e => e.trustScore >= 30 && e.trustScore < 60).length, color: '#F59E0B' },
-    { name: 'Healthy (60-90)', value: employees.filter(e => e.trustScore >= 60 && e.trustScore < 90).length, color: '#2563EB' },
-    { name: 'Excellent (90+)', value: employees.filter(e => e.trustScore >= 90).length, color: '#10B981' }
+  const departmentMetrics = [
+    { name: 'Treasury & Markets', risk: 85, trust: 62, employees: 12, predictedThreats: 1 },
+    { name: 'Wealth Management', risk: 38, trust: 81, employees: 18, predictedThreats: 1 },
+    { name: 'Retail Banking', risk: 42, trust: 79, employees: 25, predictedThreats: 1 },
+    { name: 'IT & Cybersecurity', risk: 65, trust: 74, employees: 8, predictedThreats: 1 },
+    { name: 'Operations', risk: 14, trust: 92, employees: 20, predictedThreats: 0 },
+    { name: 'Legal & Compliance', risk: 8, trust: 95, employees: 10, predictedThreats: 0 },
+    { name: 'Human Resources', risk: 12, trust: 94, employees: 7, predictedThreats: 0 }
   ];
 
   const categoryIcons: Record<string, any> = {
@@ -69,6 +66,23 @@ export default function DashboardPage() {
     login: UserCheck,
     privilege: ShieldCheck
   };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
+        <div className="w-8 h-8 rounded-full border-2 border-[#2563EB]/20 border-t-[#2563EB] animate-spin"></div>
+        <span className="text-xs text-slate-500 font-semibold">Synchronizing employee behavior baselines...</span>
+      </div>
+    );
+  }
+
+  const { metrics, dailyInsights, riskDistribution, trustScoresChart, liveActivities, activePredictions } = dashboardData || {};
+  const totalEmployees = metrics?.totalEmployees || 0;
+  const onlineCount = metrics?.onlineCount || 0;
+  const highRiskCount = metrics?.highRiskCount || 0;
+  const avgTrustScore = metrics?.avgTrustScore || "0.0";
+  const threatsPrevented = metrics?.threatsPrevented || 14;
+  const predictions = activePredictions || [];
 
   return (
     <div className="space-y-6">
