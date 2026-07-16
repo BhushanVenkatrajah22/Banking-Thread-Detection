@@ -13,6 +13,7 @@ export async function GET(
       include: { 
         employee: { 
           include: { 
+            department: { select: { name: true } },
             activities: { orderBy: { timestamp: 'desc' } } 
           } 
         } 
@@ -39,9 +40,9 @@ export async function GET(
     const result = {
       id: caseFile.id,
       employeeId: caseFile.employeeId,
-      employeeName: caseFile.employeeName,
+      employeeName: caseFile.employee?.name || 'Unknown',
       role: caseFile.employee?.role || 'Staff',
-      department: caseFile.department,
+      department: caseFile.employee?.department?.name || 'Unknown',
       severity: caseFile.severity,
       status: caseFile.status,
       assignedTo: caseFile.assignedTo,

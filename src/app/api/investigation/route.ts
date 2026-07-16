@@ -12,8 +12,8 @@ export async function GET(request: Request) {
     if (search) {
       whereClause.OR = [
         { id: { contains: search } },
-        { employeeName: { contains: search } },
-        { department: { contains: search } }
+        { employee: { name: { contains: search } } },
+        { employee: { department: { name: { contains: search } } } }
       ];
     }
 
@@ -24,7 +24,13 @@ export async function GET(request: Request) {
     const cases = await prisma.investigationReport.findMany({
       where: whereClause,
       orderBy: { createdAt: 'desc' },
-      include: { employee: { select: { role: true } } }
+      include: { 
+        employee: { 
+          include: { 
+            department: { select: { name: true } } 
+          } 
+        } 
+      }
     });
 
     const results = cases.map(item => {
@@ -38,9 +44,9 @@ export async function GET(request: Request) {
       return {
         id: item.id,
         employeeId: item.employeeId,
-        employeeName: item.employeeName,
+        employeeName: item.employee?.name || 'Unknown',
         role: item.employee?.role || 'Staff',
-        department: item.department,
+        department: item.employee?.department?.name || 'Unknown',
         severity: item.severity,
         status: item.status,
         assignedTo: item.assignedTo,
