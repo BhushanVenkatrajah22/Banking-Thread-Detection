@@ -14,8 +14,6 @@ import {
   Info,
   Loader2
 } from 'lucide-react';
-import { generateMockDatabase, copilotInference } from '@/data/mockData';
-
 interface ChatMessage {
   sender: 'user' | 'assistant';
   text: string;
@@ -24,7 +22,6 @@ interface ChatMessage {
 }
 
 export default function CopilotPage() {
-  const { employees, predictions } = generateMockDatabase();
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       sender: 'assistant',
@@ -44,7 +41,7 @@ export default function CopilotPage() {
     'Explain the behavior changes flagged for Amit Patel.'
   ];
 
-  const handleSendMessage = (text: string) => {
+  const handleSendMessage = async (text: string) => {
     if (!text.trim()) return;
 
     // Add user message
@@ -57,18 +54,32 @@ export default function CopilotPage() {
     setInputValue('');
     setLoading(true);
 
-    // Simulate AI inference time
-    setTimeout(() => {
-      const result = copilotInference(text, employees, predictions);
+    try {
+      const res = await fetch('/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text })
+      });
+      const data = await res.json();
+      
       const botMsg: ChatMessage = {
         sender: 'assistant',
-        text: result.response,
+        text: data.response || 'Inference engine is currently busy. Please retry.',
         timestamp: new Date(),
-        references: result.references
+        references: data.references || []
       };
       setMessages(prev => [...prev, botMsg]);
+    } catch (err) {
+      console.error(err);
+      const errorMsg: ChatMessage = {
+        sender: 'assistant',
+        text: 'Connection to SecureMind AI was interrupted.',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMsg]);
+    } finally {
       setLoading(false);
-    }, 1200);
+    }
   };
 
   // Scroll to bottom on new messages

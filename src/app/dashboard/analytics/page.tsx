@@ -26,39 +26,37 @@ import {
   Calendar
 } from 'lucide-react';
 
+import { useEffect } from 'react';
+
 export default function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('7d');
+  const [analyticsData, setAnalyticsData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Chart 1: Bulk File Download Trends (anomalous spike on Wednesday matching Rajesh)
-  const downloadTrendData = [
-    { day: 'Mon', Standard: 180, 'Actual Downloads': 195 },
-    { day: 'Tue', Standard: 210, 'Actual Downloads': 225 },
-    { day: 'Wed', Standard: 190, 'Actual Downloads': 1650 }, // Anomalous bulk download
-    { day: 'Thu', Standard: 200, 'Actual Downloads': 210 },
-    { day: 'Fri', Standard: 220, 'Actual Downloads': 240 },
-    { day: 'Sat', Standard: 45, 'Actual Downloads': 50 },
-    { day: 'Sun', Standard: 30, 'Actual Downloads': 45 }
-  ];
+  useEffect(() => {
+    setLoading(true);
+    fetch('/api/analytics')
+      .then(res => res.json())
+      .then(data => {
+        setAnalyticsData(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, []);
 
-  // Chart 2: USB Write Access Volume Histograms (peak Wednesday)
-  const usbWriteData = [
-    { day: 'Mon', Standard: 0, Actual: 0 },
-    { day: 'Tue', Standard: 0, Actual: 0 },
-    { day: 'Wed', Standard: 0, Actual: 1 }, // Rajesh Cruzer USB insertion
-    { day: 'Thu', Standard: 0, Actual: 0 },
-    { day: 'Fri', Standard: 0, Actual: 0 },
-    { day: 'Sat', Standard: 0, Actual: 0 },
-    { day: 'Sun', Standard: 0, Actual: 0 }
-  ];
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
+        <div className="w-8 h-8 rounded-full border-2 border-[#2563EB]/20 border-t-[#2563EB] animate-spin"></div>
+        <span className="text-xs text-slate-500 font-semibold">Generating behavioral analytics histograms...</span>
+      </div>
+    );
+  }
 
-  // Chart 3: System Access Overrides by category
-  const queryOverrideData = [
-    { category: 'Client Portfolios', Standard: 15, Actual: 98 },
-    { category: 'HR Payrolls', Standard: 2, Actual: 14 },
-    { category: 'Dormant Accounts', Standard: 5, Actual: 35 },
-    { category: 'VLAN Policies', Standard: 0, Actual: 2 },
-    { category: 'CAB Changes', Standard: 8, Actual: 9 }
-  ];
+  const { downloadTrendData, usbWriteData, queryOverrideData } = analyticsData || {};
 
   // Mock Login Heatmap Grid (7 days x 24 hours). We can draw a 7x24 grid.
   // We will highlight off-hours logins (e.g. Wednesday 3 AM)

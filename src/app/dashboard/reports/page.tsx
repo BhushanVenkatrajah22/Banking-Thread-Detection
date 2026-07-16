@@ -15,11 +15,12 @@ import {
   AlertTriangle,
   Download
 } from 'lucide-react';
-import { generateMockDatabase } from '@/data/mockData';
+import { useEffect } from 'react';
 
 export default function ReportsPage() {
-  const { employees } = generateMockDatabase();
-  const [selectedEmpId, setSelectedEmpId] = useState(employees[0]?.id || '');
+  const [employees, setEmployees] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedEmpId, setSelectedEmpId] = useState('');
   const [sections, setSections] = useState({
     summary: true,
     evidence: true,
@@ -30,6 +31,24 @@ export default function ReportsPage() {
   const [reportFormat, setReportFormat] = useState<'pdf' | 'csv'>('pdf');
   const [generating, setGenerating] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [compiledReport, setCompiledReport] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/employees')
+      .then(res => res.json())
+      .then(data => {
+        const list = data.employees || [];
+        setEmployees(list);
+        if (list.length > 0) {
+          setSelectedEmpId(list[0].id);
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, []);
 
   const selectedEmployee = employees.find(e => e.id === selectedEmpId) || employees[0];
 
@@ -37,15 +56,39 @@ export default function ReportsPage() {
     setSections(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const handleCompile = (e: React.FormEvent) => {
+  const handleCompile = async (e: React.FormEvent) => {
     e.preventDefault();
     setGenerating(true);
-    setTimeout(() => {
+    setSuccess(false);
+    try {
+      const res = await fetch('/api/reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          employeeId: selectedEmpId,
+          sections,
+          format: reportFormat
+        })
+      });
+      const data = await res.json();
+      setCompiledReport(data.report);
       setGenerating(false);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 2000);
-    }, 2000);
+    } catch (err) {
+      console.error(err);
+      setGenerating(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
+        <div className="w-8 h-8 rounded-full border-2 border-[#2563EB]/20 border-t-[#2563EB] animate-spin"></div>
+        <span className="text-xs text-slate-500 font-semibold">Synchronizing reporting templates...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
