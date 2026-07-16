@@ -1,0 +1,7 @@
+# Prisma backend ignore rules
+node_modules/
+dev.db
+.env
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
