@@ -69,7 +69,7 @@ export default function AnalyticsPage() {
     const isWeekend = day === 'Sat' || day === 'Sun';
 
     if (day === 'Wed' && hour === 3) {
-      // Rajesh Kumar anomalous login Wednesday 3 AM
+      // Karthikeyan Balaji anomalous login Wednesday 3 AM
       return 'bg-[#EF4444] border-red-300';
     }
 

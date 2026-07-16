@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    // Generate analytics chart series matching Rajesh's anomalous activities
+    // Generate analytics chart series matching Karthikeyan's anomalous activities
     const downloadTrendData = [
       { day: 'Mon', Standard: 180, 'Actual Downloads': 195 },
       { day: 'Tue', Standard: 210, 'Actual Downloads': 225 },
@@ -16,7 +16,7 @@ export async function GET() {
     const usbWriteData = [
       { day: 'Mon', Standard: 0, Actual: 0 },
       { day: 'Tue', Standard: 0, Actual: 0 },
-      { day: 'Wed', Standard: 0, Actual: 1 }, // Rajesh Cruzer USB insertion
+      { day: 'Wed', Standard: 0, Actual: 1 }, // Karthikeyan Cruzer USB insertion
       { day: 'Thu', Standard: 0, Actual: 0 },
       { day: 'Fri', Standard: 0, Actual: 0 },
       { day: 'Sat', Standard: 0, Actual: 0 },

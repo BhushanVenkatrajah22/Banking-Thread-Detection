@@ -35,10 +35,10 @@ export default function CopilotPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const starterQuestions = [
-    'Why is Rajesh Kumar high risk?',
+    'Why is Karthikeyan Balaji high risk?',
     'Summarize today\'s active threat predictions.',
     'Recommend preventive actions for the database administrator threat.',
-    'Explain the behavior changes flagged for Amit Patel.'
+    'Explain the behavior changes flagged for Senthil Kumar.'
   ];
 
   const handleSendMessage = async (text: string) => {
@@ -197,7 +197,7 @@ export default function CopilotPage() {
           >
             <input
               type="text"
-              placeholder="Ask anything about employee behavior risks, e.g., 'Why is Rajesh flagged?'..."
+              placeholder="Ask anything about employee behavior risks, e.g., 'Why is Karthikeyan flagged?'..."
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               className="flex-1 bg-[#F8FAFC] border border-[#E2E8F0] text-xs text-[#1E293B] rounded-lg px-4 py-3 focus:outline-none focus:border-[#2563EB] font-medium"

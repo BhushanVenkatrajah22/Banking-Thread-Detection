@@ -177,7 +177,7 @@ export default function Header() {
             className="flex items-center gap-1.5 hover:bg-[#F8FAFC] p-1.5 rounded-lg border border-[#E2E8F0] transition-colors cursor-pointer"
           >
             <div className="w-7 h-7 rounded-full bg-[#2563EB] text-white flex items-center justify-center font-bold text-xs">
-              AG
+              AD
             </div>
             <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
           </button>
@@ -185,8 +185,8 @@ export default function Header() {
           {showProfileMenu && (
             <div className="absolute right-0 mt-2 w-48 bg-white border border-[#E2E8F0] rounded-xl shadow-lg z-50 p-1.5 overflow-hidden">
               <div className="px-3 py-2 border-b border-slate-100">
-                <p className="text-xs font-semibold text-[#0F172A]">Anjali Gupta</p>
-                <p className="text-[10px] text-slate-500 truncate">anjali.gupta@securemind.bank</p>
+                <p className="text-xs font-semibold text-[#0F172A]">Admin User</p>
+                <p className="text-[10px] text-slate-500 truncate">admin@securemind.bank</p>
               </div>
               <div className="py-1">
                 <Link href="/dashboard/settings" onClick={() => setShowProfileMenu(false)} className="flex items-center gap-2 px-3 py-2 text-xs text-[#1E293B] hover:bg-[#F8FAFC] rounded-lg">

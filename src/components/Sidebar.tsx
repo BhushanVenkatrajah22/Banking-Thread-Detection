@@ -78,7 +78,7 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
             <input
               type="text"
-              placeholder="Quick search (e.g. Rajesh)..."
+              placeholder="Quick search (e.g. Karthikeyan)..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-[#F8FAFC] border border-[#E2E8F0] text-sm text-[#1E293B] rounded-lg pl-9 pr-4 py-2 focus:outline-none focus:border-[#2563EB] transition-colors"
@@ -136,7 +136,7 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
             </div>
             {!collapsed && (
               <div className="flex flex-col min-w-0">
-                <span className="text-sm font-semibold text-[#0F172A] truncate">Anjali Gupta</span>
+                <span className="text-sm font-semibold text-[#0F172A] truncate">Abirami Ganesan</span>
                 <span className="text-xs text-slate-500 truncate">SOC Manager</span>
               </div>
             )}

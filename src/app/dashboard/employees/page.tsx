@@ -200,7 +200,7 @@ export default function EmployeeDirectoryPage() {
                     <td className="py-3.5 px-5">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-slate-100 border border-[#E2E8F0] text-[#0F172A] flex items-center justify-center font-bold text-xs">
-                          {emp.name.split(' ').map(n => n[0]).join('')}
+                          {emp.name.split(' ').map((n: string) => n[0]).join('')}
                         </div>
                         <div>
                           <div className="font-bold text-[#0F172A]">{emp.name}</div>

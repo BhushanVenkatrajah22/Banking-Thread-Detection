@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('anjali.gupta@securemind.bank');
+  const [email, setEmail] = useState('admin@securemind.bank');
   const [password, setPassword] = useState('••••••••••••');
   const [step, setStep] = useState<1 | 2>(1); // 1: Credentials, 2: OTP 2FA
   const [otpCodes, setOtpCodes] = useState<string[]>(['', '', '', '', '', '']);

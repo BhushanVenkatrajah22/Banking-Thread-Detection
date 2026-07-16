@@ -37,8 +37,8 @@ export default function ExecutiveDashboardPage() {
 
   // Impact distribution data
   const impactDistribution = [
-    { name: 'Critical Impact', value: 2, color: '#EF4444' }, // Rajesh, Priya
-    { name: 'High Impact', value: 1, color: '#F59E0B' }, // Amit
+    { name: 'Critical Impact', value: 2, color: '#EF4444' }, // Karthikeyan, Meenakshi
+    { name: 'High Impact', value: 1, color: '#F59E0B' }, // Senthil
     { name: 'Medium Impact', value: 5, color: '#2563EB' },
     { name: 'Low Impact', value: 92, color: '#10B981' }
   ];

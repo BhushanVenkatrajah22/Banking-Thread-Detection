@@ -236,7 +236,7 @@ export default function InvestigationDetailsPage() {
               Collected Behavioral Evidence ({caseFile.evidence.length})
             </h3>
             <div className="space-y-2">
-              {caseFile.evidence.map((item, idx) => (
+              {(caseFile.evidence as string[]).map((item: string, idx: number) => (
                 <div key={idx} className="p-3 border border-[#E2E8F0] bg-white rounded-lg flex gap-3 items-center text-xs font-semibold text-slate-600">
                   <FileCheck className="w-4.5 h-4.5 text-[#10B981] shrink-0" />
                   <span>{item}</span>

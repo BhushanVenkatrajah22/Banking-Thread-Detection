@@ -91,7 +91,7 @@ export default function DashboardPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white border border-[#E2E8F0] p-6 rounded-xl premium-shadow">
         <div>
           <h2 className="text-xl font-bold text-[#0F172A] flex items-center gap-2">
-            Welcome back, SOC Manager Anjali
+            Welcome back, SOC Manager Abirami
           </h2>
           <p className="text-sm text-slate-500 mt-1">
             Predictive threat vectors are actively synced. No new security breaches occurred.
