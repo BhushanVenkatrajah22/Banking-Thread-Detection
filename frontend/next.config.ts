@@ -2,11 +2,7 @@ import type { NextConfig } from "next";
 import path from "path";
 
 const nextConfig: NextConfig = {
-  turbopack: {
-    resolveAlias: {
-      "@backend": path.resolve(__dirname, "../backend/src"),
-    },
-  },
+  /* config options here */
 };
 
 export default nextConfig;
